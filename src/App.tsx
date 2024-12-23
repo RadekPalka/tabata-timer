@@ -3,7 +3,7 @@ import { TrainingDetailsForm } from './components/TrainingDetailsForm';
 function App() {
 	return (
 		<>
-			<h1>Tabata timer</h1>
+			<h1 className='text-center text-lg'>Tabata timer</h1>
 			<TrainingDetailsForm />
 		</>
 	);
