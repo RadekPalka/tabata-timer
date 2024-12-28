@@ -1,11 +1,27 @@
 import React, { FormEvent, useState } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
+import { RootState } from '../state/store';
 import { TrainingObjectType } from '../types/TrainingObjectType';
+import { updateTrainingDetails } from '../state/trainingDetailsSlice';
 export const TrainingDetailsForm: React.FC = () => {
-	const [exerciseLength, setExerciseLength] = useState(20);
-	const [restLength, setRestLength] = useState(10);
-	const [numberOfCycles, setNumberOfCycles] = useState(8);
-	const [numberOfSets, setNumberOfSets] = useState(1);
-	const [restBetweenSets, setRestBetweenSets] = useState(2);
+	const trainingDetails = useSelector(
+		(state: RootState) => state.trainingDetails
+	);
+	const [exerciseLength, setExerciseLength] = useState(
+		trainingDetails.exerciseLength
+	);
+	const [restLength, setRestLength] = useState(trainingDetails.restLength);
+	const [numberOfCycles, setNumberOfCycles] = useState(
+		trainingDetails.numberOfCycles
+	);
+	const [numberOfSets, setNumberOfSets] = useState(
+		trainingDetails.numberOfSets
+	);
+	const [restBetweenSets, setRestBetweenSets] = useState(
+		trainingDetails.restBetweenSets
+	);
+
+	const dispatch = useDispatch();
 
 	const trainingConfig = [
 		{
@@ -51,13 +67,15 @@ export const TrainingDetailsForm: React.FC = () => {
 	];
 	const handleSubmit = (e: FormEvent) => {
 		e.preventDefault();
-		// setTraining({
-		// 	exerciseLength,
-		// 	restLength: restLength,
-		// 	numberOfCycles,
-		// 	numberOfSets,
-		// 	restBetweenSets: restBetweenSets,
-		// });
+		dispatch(
+			updateTrainingDetails({
+				exerciseLength,
+				restLength,
+				numberOfCycles,
+				numberOfSets,
+				restBetweenSets,
+			})
+		);
 	};
 
 	const setTrainingMode = ({
