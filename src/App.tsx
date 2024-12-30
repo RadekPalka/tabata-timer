@@ -6,7 +6,7 @@ function App() {
 	const [isTrainingStarted, setIsTrainingStarted] = useState(false);
 	return (
 		<>
-			<h1 className='text-center text-lg'>Tabata timer</h1>
+			<h1 className='text-center text-xl mt-3 mb-5'>Stoper Tabata</h1>
 			<TrainingDetailsForm />
 			<button onClick={() => setIsTrainingStarted(true)}>
 				Zacznij trening
