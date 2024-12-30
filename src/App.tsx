@@ -1,17 +1,18 @@
-import { useState } from 'react';
+import { useSelector } from 'react-redux';
 import { TrainingDetailsForm } from './components/TrainingDetailsForm';
 import { TrainingTimer } from './components/TrainingTimer';
+import { AppState } from './types/AppState';
 
 function App() {
-	const [isTrainingStarted, setIsTrainingStarted] = useState(false);
+	const appState = useSelector(
+		(state: { appState: AppState }) => state.appState.value
+	);
 	return (
 		<>
 			<h1 className='text-center text-xl mt-3 mb-5'>Stoper Tabata</h1>
-			<TrainingDetailsForm />
-			<button onClick={() => setIsTrainingStarted(true)}>
-				Zacznij trening
-			</button>
-			{isTrainingStarted && <TrainingTimer />}
+			{appState === 'edit' && <TrainingDetailsForm />}
+
+			{appState === 'timer' && <TrainingTimer />}
 		</>
 	);
 }

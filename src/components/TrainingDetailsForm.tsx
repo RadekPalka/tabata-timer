@@ -3,6 +3,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '../state/store';
 import { TrainingObjectType } from '../types/TrainingObjectType';
 import { updateTrainingDetails } from '../state/trainingDetailsSlice';
+import { setState } from '../state/appStateSlice';
 export const TrainingDetailsForm: React.FC = () => {
 	const trainingDetails = useSelector(
 		(state: RootState) => state.trainingDetails
@@ -76,6 +77,7 @@ export const TrainingDetailsForm: React.FC = () => {
 				restBetweenSets,
 			})
 		);
+		dispatch(setState('timer'));
 	};
 
 	const setTrainingMode = ({
@@ -86,10 +88,10 @@ export const TrainingDetailsForm: React.FC = () => {
 		restBetweenSets,
 	}: TrainingObjectType) => {
 		setExerciseLength(exerciseLength);
-		if (restLength) setRestLength(restLength);
+		setRestLength(restLength);
 		setNumberOfCycles(numberOfCycles);
 		setNumberOfSets(numberOfSets);
-		if (restBetweenSets) setRestBetweenSets(restBetweenSets);
+		setRestBetweenSets(restBetweenSets);
 	};
 
 	return (
@@ -150,7 +152,7 @@ export const TrainingDetailsForm: React.FC = () => {
 					Trening obwodowy
 				</button>
 				<button type='submit' className='btn bg-red-900 hover:bg-red-800'>
-					Zapisz
+					Zacznij trening
 				</button>
 			</div>
 		</form>
