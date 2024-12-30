@@ -91,12 +91,21 @@ export const TrainingDetailsForm: React.FC = () => {
 		setNumberOfSets(numberOfSets);
 		if (restBetweenSets) setRestBetweenSets(restBetweenSets);
 	};
+
 	return (
-		<form onSubmit={handleSubmit}>
-			<h2>Stwórz swój trening</h2>
+		<form
+			onSubmit={handleSubmit}
+			className='flex flex-col text-center items-center gap-4 w-3/4 mx-auto my-2 border border-white rounded-lg pb-6 pt-3 bg-blue-950'
+		>
+			<h2 className='text-xl'>Stwórz swój trening</h2>
 			{trainingConfig.map((el) => (
-				<div key={el.id}>
-					<label htmlFor={el.id}>{el.label}</label>
+				<div
+					key={el.id}
+					className='flex flex-col sm:flex-row items-center justify-center gap-4'
+				>
+					<label className='text-slate-300' htmlFor={el.id}>
+						{el.label}
+					</label>
 					<input
 						type='range'
 						id={el.id}
@@ -109,35 +118,41 @@ export const TrainingDetailsForm: React.FC = () => {
 					<output>{el.value}</output>
 				</div>
 			))}
-			<button
-				type='button'
-				onClick={() =>
-					setTrainingMode({
-						exerciseLength: 20,
-						restLength: 10,
-						numberOfCycles: 8,
-						numberOfSets: 1,
-						restBetweenSets: 0,
-					})
-				}
-			>
-				Tabata
-			</button>
-			<button
-				type='button'
-				onClick={() =>
-					setTrainingMode({
-						exerciseLength: 30,
-						restLength: 3,
-						numberOfCycles: 5,
-						numberOfSets: 3,
-						restBetweenSets: 60,
-					})
-				}
-			>
-				Trening obwodowy
-			</button>
-			<button type='submit'>Zapisz</button>
+			<div className='flex flex-col sm:flex-row  items-center justify-center gap-4'>
+				<button
+					className='bg-green-900 btn hover:bg-green-800'
+					type='button'
+					onClick={() =>
+						setTrainingMode({
+							exerciseLength: 20,
+							restLength: 10,
+							numberOfCycles: 8,
+							numberOfSets: 1,
+							restBetweenSets: 0,
+						})
+					}
+				>
+					Tabata
+				</button>
+				<button
+					className='bg-blue-800 btn hover:bg-blue-700'
+					type='button'
+					onClick={() =>
+						setTrainingMode({
+							exerciseLength: 30,
+							restLength: 3,
+							numberOfCycles: 5,
+							numberOfSets: 3,
+							restBetweenSets: 60,
+						})
+					}
+				>
+					Trening obwodowy
+				</button>
+				<button type='submit' className='btn bg-red-900 hover:bg-red-800'>
+					Zapisz
+				</button>
+			</div>
 		</form>
 	);
 };
