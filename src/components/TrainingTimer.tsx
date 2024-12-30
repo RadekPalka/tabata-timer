@@ -105,7 +105,7 @@ export const TrainingTimer: React.FC = () => {
 		return () => clearInterval(intervalId);
 	}, [trainingArr.length]);
 	return (
-		<div>
+		<div className='flex flex-col items-center'>
 			<p>{formatTime()}</p>
 			<p>Numer setu: {setNumber}</p>
 			<p>Numer cyklu: {cycleNumber}</p>
