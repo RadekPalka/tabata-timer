@@ -4,6 +4,8 @@ import { RootState } from '../state/store';
 import { TrainingObjectType } from '../types/TrainingObjectType';
 import { updateTrainingDetails } from '../state/trainingDetailsSlice';
 import { setState } from '../state/appStateSlice';
+import { setTrainingArr } from '../state/trainingArrSlice';
+import { StageObj } from '../types/StageObj';
 export const TrainingDetailsForm: React.FC = () => {
 	const trainingDetails = useSelector(
 		(state: RootState) => state.trainingDetails
@@ -68,16 +70,68 @@ export const TrainingDetailsForm: React.FC = () => {
 	];
 	const handleSubmit = (e: FormEvent) => {
 		e.preventDefault();
-		dispatch(
-			updateTrainingDetails({
-				exerciseLength,
-				restLength,
-				numberOfCycles,
-				numberOfSets,
-				restBetweenSets,
-			})
-		);
+
+		const updatedDetails = {
+			exerciseLength,
+			restLength,
+			numberOfCycles,
+			numberOfSets,
+			restBetweenSets,
+		};
+
+		dispatch(updateTrainingDetails(updatedDetails));
 		dispatch(setState('timer'));
+
+		const arr: StageObj[] = [];
+		let cycleIndex = 0;
+
+		for (let j = 0; j < updatedDetails.numberOfSets; j++) {
+			for (let i = 0; i < updatedDetails.numberOfCycles; i++) {
+				cycleIndex = i + 1;
+
+				arr.push({
+					type: 'exercise',
+					length: updatedDetails.exerciseLength,
+					setIndex: j + 1,
+					cycleIndex,
+				});
+
+				if (
+					!updatedDetails.restLength ||
+					i === updatedDetails.numberOfCycles - 1
+				)
+					continue;
+
+				arr.push({
+					type: 'rest',
+					length: updatedDetails.restLength,
+					setIndex: j + 1,
+					cycleIndex,
+				});
+			}
+
+			if (
+				updatedDetails.numberOfSets > 1 &&
+				j < updatedDetails.numberOfSets - 1
+			) {
+				arr.push({
+					type: 'rest-between-sets',
+					length: updatedDetails.restBetweenSets || 0,
+					setIndex: j + 1,
+					cycleIndex,
+				});
+			} else if (j === updatedDetails.numberOfSets - 1) {
+				arr.push({
+					type: 'done',
+					length: 0,
+					setIndex: j + 1,
+					cycleIndex,
+				});
+			}
+		}
+
+		dispatch(setTrainingArr(arr));
+		console.log(arr);
 	};
 
 	const setTrainingMode = ({
