@@ -1,7 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { RootState } from '../state/store';
 import { useSelector } from 'react-redux';
-
+import blipSoundFile from '../assets/audio/blip.mp3';
+import bellSoundFile from '../assets/audio/bell.mp3';
+import whistleSoundFile from '../assets/audio/whistle.mp3';
 import { Stage } from '../types/Stage';
 
 const labelObj: Record<Stage, string> = {
@@ -12,15 +14,28 @@ const labelObj: Record<Stage, string> = {
 };
 
 export const TrainingTimer: React.FC = () => {
+	const blipSound = useRef(new Audio(blipSoundFile));
+	const bellSound = useRef(new Audio(bellSoundFile));
+	const whistleSound = useRef(new Audio(whistleSoundFile));
 	const trainingArr = useSelector(
 		(state: RootState) => state.trainingArrState.trainingArr
 	);
-	console.log(trainingArr);
+
 	const [state, setState] = useState({
 		secCounter: 0,
 		stageSecCounter: 0,
 		index: 0,
 	});
+
+	const playSound = (stage: Stage, secCounter: number) => {
+		if (secCounter > 0) {
+			blipSound.current.play();
+		} else if (stage === 'exercise') {
+			bellSound.current.play();
+		} else if (stage === 'rest') {
+			whistleSound.current.play();
+		}
+	};
 
 	const formatTime = () => {
 		const trainingTime =
@@ -45,7 +60,12 @@ export const TrainingTimer: React.FC = () => {
 				}
 				tempObj.secCounter++;
 				tempObj.stageSecCounter++;
-				console.log(tempObj.secCounter);
+				const numberOfRemainingSeconds =
+					trainingArr[tempObj.index].length - tempObj.stageSecCounter;
+				if (numberOfRemainingSeconds <= 3) {
+					playSound(trainingArr[tempObj.index].type, numberOfRemainingSeconds);
+				}
+
 				if (tempObj.stageSecCounter === trainingArr[tempObj.index].length) {
 					tempObj.index++;
 					tempObj.stageSecCounter = 0;
