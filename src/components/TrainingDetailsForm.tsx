@@ -1,27 +1,15 @@
 import React, { FormEvent, useState } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
-import { RootState } from '../state/store';
+import { useDispatch } from 'react-redux';
 import { TrainingObjectType } from '../types/TrainingObjectType';
 import { setState } from '../state/appStateSlice';
 import { updateTrainingArr } from '../state/trainingArrSlice';
 
 export const TrainingDetailsForm: React.FC = () => {
-	const trainingDetails = useSelector(
-		(state: RootState) => state.trainingDetails
-	);
-	const [exerciseLength, setExerciseLength] = useState(
-		trainingDetails.exerciseLength
-	);
-	const [restLength, setRestLength] = useState(trainingDetails.restLength);
-	const [numberOfCycles, setNumberOfCycles] = useState(
-		trainingDetails.numberOfCycles
-	);
-	const [numberOfSets, setNumberOfSets] = useState(
-		trainingDetails.numberOfSets
-	);
-	const [restBetweenSets, setRestBetweenSets] = useState(
-		trainingDetails.restBetweenSets
-	);
+	const [exerciseLength, setExerciseLength] = useState(20);
+	const [restLength, setRestLength] = useState(10);
+	const [numberOfCycles, setNumberOfCycles] = useState(8);
+	const [numberOfSets, setNumberOfSets] = useState(1);
+	const [restBetweenSets, setRestBetweenSets] = useState(0);
 
 	const dispatch = useDispatch();
 
@@ -70,18 +58,17 @@ export const TrainingDetailsForm: React.FC = () => {
 	const handleSubmit = (e: FormEvent) => {
 		e.preventDefault();
 
-		const updatedDetails = {
-			exerciseLength,
-			restLength,
-			numberOfCycles,
-			numberOfSets,
-			restBetweenSets,
-		};
-
-		dispatch(updateTrainingArr(updatedDetails));
 		dispatch(setState('timer'));
 
-		dispatch(updateTrainingArr(updatedDetails));
+		dispatch(
+			updateTrainingArr({
+				exerciseLength,
+				restLength,
+				numberOfCycles,
+				numberOfSets,
+				restBetweenSets,
+			})
+		);
 	};
 
 	const setTrainingMode = ({
