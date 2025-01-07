@@ -58,17 +58,17 @@ export const TrainingDetailsForm: React.FC = () => {
 	const handleSubmit = (e: FormEvent) => {
 		e.preventDefault();
 
-		const updatedDetails = {
-			exerciseLength,
-			restLength,
-			numberOfCycles,
-			numberOfSets,
-			restBetweenSets,
-		};
-
 		dispatch(setState('timer'));
 
-		dispatch(updateTrainingArr(updatedDetails));
+		dispatch(
+			updateTrainingArr({
+				exerciseLength,
+				restLength,
+				numberOfCycles,
+				numberOfSets,
+				restBetweenSets,
+			})
+		);
 	};
 
 	const setTrainingMode = ({
