@@ -24,6 +24,10 @@ export const TrainingTimer: React.FC = () => {
 		(state: RootState) => state.soundSwitcherState.isSoundsEnabled
 	);
 	const soundStateRef = useRef(soundState);
+	const intervalIdRef = useRef<number | null>(null);
+	const blinkingIntervalRef = useRef<number | null>(null);
+	const [isTimerRunning, setIsTimerRunnning] = useState(true);
+	const [isDisplay, setIsDisplay] = useState(true);
 
 	useEffect(() => {
 		soundStateRef.current = soundState;
@@ -58,12 +62,24 @@ export const TrainingTimer: React.FC = () => {
 		return `${formattedMinutes}:${formattedSeconds}`;
 	};
 
-	useEffect(() => {
-		const intervalId = setInterval(() => {
+	const startBlinking = () => {
+		blinkingIntervalRef.current = setInterval(() => {
+			setIsDisplay((prev) => !prev);
+		}, 1000);
+	};
+
+	const startInterval = () => {
+		blinkingIntervalRef.current && clearInterval(blinkingIntervalRef.current);
+		setIsDisplay(true);
+		setIsTimerRunnning(true);
+		intervalIdRef.current = setInterval(() => {
 			setState((prevState) => {
 				const tempObj = { ...prevState };
-				if (trainingArr[tempObj.index].type === 'done') {
-					clearInterval(intervalId);
+				if (
+					trainingArr[tempObj.index].type === 'done' &&
+					intervalIdRef.current
+				) {
+					clearInterval(intervalIdRef.current);
 					return tempObj;
 				}
 
@@ -82,17 +98,38 @@ export const TrainingTimer: React.FC = () => {
 				return tempObj;
 			});
 		}, 1000);
-		return () => clearInterval(intervalId);
+	};
+
+	const stopInterval = () => {
+		setIsTimerRunnning(false);
+		startBlinking();
+		if (intervalIdRef.current !== null) {
+			clearInterval(intervalIdRef.current);
+			intervalIdRef.current = null;
+		}
+	};
+
+	useEffect(() => {
+		startInterval();
+		return () => stopInterval();
 	}, []);
 	return (
 		<div className='flex flex-col text-center items-center gap-4 w-3/4 mx-auto my-2 border border-white rounded-lg pb-6 pt-3 bg-blue-950'>
-			<p>{formatTime()}</p>
+			<p style={isDisplay ? { color: 'white' } : { color: 'transparent' }}>
+				{formatTime()}
+			</p>
 
 			<p>Numer setu: {trainingArr[state.index].setIndex}</p>
 			<p>Numer cyklu: {trainingArr[state.index].cycleIndex}</p>
 
 			<p>{trainingArr[state.index].length - state.stageSecCounter}</p>
 			<p>{labelObj[trainingArr[state.index].type]}</p>
+			<button
+				className='btn bg-red-700'
+				onClick={() => (isTimerRunning ? stopInterval() : startInterval())}
+			>
+				{isTimerRunning ? 'Wstrzymaj stoper' : 'Wznów stoper'}
+			</button>
 		</div>
 	);
 };
