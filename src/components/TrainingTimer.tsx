@@ -115,7 +115,7 @@ export const TrainingTimer: React.FC = () => {
 	}, []);
 	return (
 		<div className='flex flex-col text-center items-center gap-4 w-3/4 mx-auto my-2 border border-white rounded-lg pb-6 pt-3 bg-blue-950'>
-			<p style={isDisplay ? { color: 'white' } : { color: 'transparent' }}>
+			<p style={{ color: isDisplay ? 'white' : 'transparent' }}>
 				{formatTime()}
 			</p>
 
