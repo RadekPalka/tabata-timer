@@ -23,6 +23,11 @@ export const TrainingTimer: React.FC = () => {
 	const soundState = useSelector(
 		(state: RootState) => state.soundSwitcherState.isSoundsEnabled
 	);
+	const soundStateRef = useRef(soundState);
+
+	useEffect(() => {
+		soundStateRef.current = soundState;
+	}, [soundState]);
 
 	const [state, setState] = useState({
 		secCounter: 0,
@@ -61,12 +66,12 @@ export const TrainingTimer: React.FC = () => {
 					clearInterval(intervalId);
 					return tempObj;
 				}
-				console.log(soundState);
+
 				tempObj.secCounter++;
 				tempObj.stageSecCounter++;
 				const numberOfRemainingSeconds =
 					trainingArr[tempObj.index].length - tempObj.stageSecCounter;
-				if (numberOfRemainingSeconds <= 3 && soundState) {
+				if (numberOfRemainingSeconds <= 3 && soundStateRef.current) {
 					playSound(trainingArr[tempObj.index].type, numberOfRemainingSeconds);
 				}
 
@@ -78,7 +83,7 @@ export const TrainingTimer: React.FC = () => {
 			});
 		}, 1000);
 		return () => clearInterval(intervalId);
-	}, [soundState]);
+	}, []);
 	return (
 		<div className='flex flex-col text-center items-center gap-4 w-3/4 mx-auto my-2 border border-white rounded-lg pb-6 pt-3 bg-blue-950'>
 			<p>{formatTime()}</p>
