@@ -24,39 +24,40 @@ const trainingArrSlice = createSlice({
 			} = action.payload;
 			const arr: StageObj[] = [];
 			let cycleIndex = 0;
-
+			let timeStamp = 0;
 			for (let j = 0; j < numberOfSets; j++) {
 				for (let i = 0; i < numberOfCycles; i++) {
 					cycleIndex = i + 1;
-
+					timeStamp += exerciseLength;
 					arr.push({
 						type: 'exercise',
-						length: exerciseLength,
+						timeStamp,
 						setIndex: j + 1,
 						cycleIndex,
 					});
 
 					if (!restLength || i === numberOfCycles - 1) continue;
-
+					timeStamp += restLength;
 					arr.push({
 						type: 'rest',
-						length: restLength,
+						timeStamp,
 						setIndex: j + 1,
 						cycleIndex,
 					});
 				}
 
 				if (numberOfSets > 1 && j < numberOfSets - 1) {
+					timeStamp += restBetweenSets;
 					arr.push({
 						type: 'rest-between-sets',
-						length: restBetweenSets || 0,
+						timeStamp,
 						setIndex: j + 1,
 						cycleIndex,
 					});
 				} else if (j === numberOfSets - 1) {
 					arr.push({
 						type: 'done',
-						length: 0,
+						timeStamp,
 						setIndex: j + 1,
 						cycleIndex,
 					});
