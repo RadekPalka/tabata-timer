@@ -13,11 +13,11 @@ const labelObj: Record<Stage, string> = {
 	done: 'Dobra robota, trening skończony :)',
 };
 
-type State = {
+type TimerState = {
 	timerStart: number;
-	stageSecCounter: number;
 	index: number;
 	elapsedTime: number;
+	pauseStart: number;
 };
 
 export const TrainingTimer: React.FC = () => {
@@ -33,18 +33,18 @@ export const TrainingTimer: React.FC = () => {
 	const soundStateRef = useRef(soundState);
 	const intervalIdRef = useRef<number | null>(null);
 	const blinkingIntervalRef = useRef<number | null>(null);
-	const [isTimerRunning, setIsTimerRunnning] = useState(true);
+
 	const [isDisplay, setIsDisplay] = useState(true);
 
 	useEffect(() => {
 		soundStateRef.current = soundState;
 	}, [soundState]);
 
-	const [state, setState] = useState<State>({
+	const [state, setState] = useState<TimerState>({
 		timerStart: Date.now(),
-		stageSecCounter: 0,
 		index: 0,
 		elapsedTime: 0,
+		pauseStart: 0,
 	});
 
 	const playSound = (stage: Stage, secCounter: number) => {
@@ -76,7 +76,7 @@ export const TrainingTimer: React.FC = () => {
 		}, 1000);
 	};
 
-	const checkStageIndex = (obj: State) => {
+	const checkStageIndex = (obj: TimerState) => {
 		for (const [index, el] of trainingArr.entries()) {
 			if (obj.elapsedTime <= el.timeStamp) {
 				break;
@@ -92,29 +92,13 @@ export const TrainingTimer: React.FC = () => {
 
 	const displayStageSec = () => {
 		if (trainingArr[state.index].type === 'done') {
-			console.log('DONE');
 			return;
 		}
 		const stageSec = calculateStageSec();
-		console.log(state.index >= trainingArr.length - 1);
-		// if (
-		// 	state.index >= trainingArr.length - 1 &&
-		// 	intervalIdRef.current &&
-		// 	state.elapsedTime === trainingArr[trainingArr.length - 1].timeStamp
-		// ) {
 
-		// 	clearInterval(intervalIdRef.current);
-		// 	return;
-		// }
-
-		// return stageSec
-		// 	? stageSec
-		// 	: trainingArr[state.index + 1].timeStamp - state.elapsedTime;
 		if (stageSec) {
 			return stageSec;
 		} else if (!stageSec && state.index === trainingArr.length - 2) {
-			console.log('Koniec');
-			//setState({ ...state, index: state.index + 1 });
 			intervalIdRef.current && clearInterval(intervalIdRef.current);
 			setState({ ...state, index: state.index + 1 });
 			return 0;
@@ -126,27 +110,47 @@ export const TrainingTimer: React.FC = () => {
 	const startInterval = () => {
 		blinkingIntervalRef.current && clearInterval(blinkingIntervalRef.current);
 		setIsDisplay(true);
-		setIsTimerRunnning(true);
 
 		intervalIdRef.current = setInterval(() => {
 			setState((prev) => {
 				const tempObj = { ...prev };
 
-				prev.elapsedTime = Math.floor((Date.now() - prev.timerStart) / 1000);
+				tempObj.elapsedTime = Math.floor(
+					(Date.now() - tempObj.timerStart) / 1000
+				);
+
 				checkStageIndex(tempObj);
 				return tempObj;
 			});
-		}, 500);
+		}, 1000);
 	};
 
 	const stopInterval = () => {
-		console.log('stop');
-		setIsTimerRunnning(false);
-		startBlinking();
 		if (intervalIdRef.current !== null) {
 			clearInterval(intervalIdRef.current);
 			intervalIdRef.current = null;
 		}
+	};
+
+	const startPauseTimer = () => {
+		if (!intervalIdRef.current) return;
+		clearInterval(intervalIdRef.current);
+		setState({ ...state, pauseStart: Date.now() });
+		startBlinking();
+	};
+
+	const stopPauseTimer = () => {
+		if (!blinkingIntervalRef.current) return;
+		const pauseDuration = Date.now() - state.pauseStart;
+
+		setState((prev) => ({
+			...prev,
+			timerStart: prev.timerStart + pauseDuration,
+
+			pauseStart: 0,
+		}));
+		startInterval();
+		clearInterval(blinkingIntervalRef.current);
 	};
 
 	useEffect(() => {
@@ -154,14 +158,11 @@ export const TrainingTimer: React.FC = () => {
 			state.elapsedTime === trainingArr[trainingArr.length - 1].timeStamp &&
 			intervalIdRef.current
 		) {
-			console.log(trainingArr[state.index]);
-
 			clearInterval(intervalIdRef.current);
 		}
 	}, [state.elapsedTime, state.index]);
 
 	useEffect(() => {
-		// if (state.index === trainingArr.length - 1) return;
 		const stageSecCounter = calculateStageSec();
 		if (stageSecCounter < 4 && soundStateRef.current) {
 			playSound(trainingArr[state.index].type, stageSecCounter);
@@ -179,18 +180,17 @@ export const TrainingTimer: React.FC = () => {
 			</p>
 			<p>Numer setu: {trainingArr[state.index].setIndex}</p>
 			<p>Numer cyklu: {trainingArr[state.index].cycleIndex}</p>
-			<p>{displayStageSec()}</p>
 			<p>{labelObj[trainingArr[state.index]?.type]}</p>
 			<p>{displayStageSec()}</p>
-			{state.elapsedTime === trainingArr[trainingArr.length - 1].timeStamp && (
-				<p>Dobra robota, koniec treningu</p>
-			)}
-			{state.index !== trainingArr.length && (
+
+			{trainingArr[state.index].type !== 'done' && (
 				<button
 					className='btn bg-red-700'
-					onClick={() => (isTimerRunning ? stopInterval() : startInterval())}
+					onClick={() =>
+						!state.pauseStart ? startPauseTimer() : stopPauseTimer()
+					}
 				>
-					{isTimerRunning ? 'Wstrzymaj stoper' : 'Wznów stoper'}
+					{!state.pauseStart ? 'Wstrzymaj stoper' : 'Wznów stoper'}
 				</button>
 			)}
 		</div>
