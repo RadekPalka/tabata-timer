@@ -157,15 +157,6 @@ export const TrainingTimer: React.FC = () => {
 	};
 
 	useEffect(() => {
-		if (
-			state.elapsedTime === trainingArr[trainingArr.length - 1].timeStamp &&
-			intervalIdRef.current
-		) {
-			clearInterval(intervalIdRef.current);
-		}
-	}, [state.elapsedTime, state.index]);
-
-	useEffect(() => {
 		const stageSecCounter = calculateStageSec();
 		if (stageSecCounter < 4 && soundStateRef.current) {
 			playSound(trainingArr[state.index].type, stageSecCounter);
