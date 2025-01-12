@@ -17,7 +17,7 @@ type TimerState = {
 	timerStart: number;
 	index: number;
 	elapsedTime: number;
-	pauseStart: number;
+	pauseStartTime: number;
 };
 
 export const TrainingTimer: React.FC = () => {
@@ -44,7 +44,7 @@ export const TrainingTimer: React.FC = () => {
 		timerStart: Date.now(),
 		index: 0,
 		elapsedTime: 0,
-		pauseStart: 0,
+		pauseStartTime: 0,
 	});
 
 	const playSound = (stage: Stage, secCounter: number) => {
@@ -108,16 +108,16 @@ export const TrainingTimer: React.FC = () => {
 	};
 
 	const startInterval = () => {
-		blinkingIntervalRef.current && clearInterval(blinkingIntervalRef.current);
-		setIsDisplay(true);
-
+		const timerStart = state.timerStart;
 		intervalIdRef.current = setInterval(() => {
 			setState((prev) => {
 				const tempObj = { ...prev };
+				const timeDifference = Date.now() - tempObj.timerStart;
+				tempObj.elapsedTime = Math.floor(timeDifference / 1000);
 
-				tempObj.elapsedTime = Math.floor(
-					(Date.now() - tempObj.timerStart) / 1000
-				);
+				if (tempObj.pauseStartTime) {
+					tempObj.timerStart = timerStart + Date.now() - tempObj.pauseStartTime;
+				}
 
 				checkStageIndex(tempObj);
 				return tempObj;
@@ -132,25 +132,28 @@ export const TrainingTimer: React.FC = () => {
 		}
 	};
 
-	const startPauseTimer = () => {
+	const restartInterval = () => {
 		if (!intervalIdRef.current) return;
 		clearInterval(intervalIdRef.current);
-		setState({ ...state, pauseStart: Date.now() });
+		startInterval();
+	};
+
+	const startPause = () => {
+		setState({
+			...state,
+			pauseStartTime: Date.now(),
+		});
+		restartInterval();
 		startBlinking();
 	};
 
-	const stopPauseTimer = () => {
-		if (!blinkingIntervalRef.current) return;
-		const pauseDuration = Date.now() - state.pauseStart;
-
-		setState((prev) => ({
-			...prev,
-			timerStart: prev.timerStart + pauseDuration,
-
-			pauseStart: 0,
-		}));
-		startInterval();
-		clearInterval(blinkingIntervalRef.current);
+	const stopPause = () => {
+		setState({
+			...state,
+			pauseStartTime: 0,
+		});
+		blinkingIntervalRef.current && clearInterval(blinkingIntervalRef.current);
+		setIsDisplay(true);
 	};
 
 	useEffect(() => {
@@ -186,11 +189,9 @@ export const TrainingTimer: React.FC = () => {
 			{trainingArr[state.index].type !== 'done' && (
 				<button
 					className='btn bg-red-700'
-					onClick={() =>
-						!state.pauseStart ? startPauseTimer() : stopPauseTimer()
-					}
+					onClick={() => (!state.pauseStartTime ? startPause() : stopPause())}
 				>
-					{!state.pauseStart ? 'Wstrzymaj stoper' : 'Wznów stoper'}
+					{!state.pauseStartTime ? 'Wstrzymaj stoper' : 'Wznów stoper'}
 				</button>
 			)}
 		</div>
