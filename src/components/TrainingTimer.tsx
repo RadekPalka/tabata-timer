@@ -69,6 +69,7 @@ export const TrainingTimer: React.FC = () => {
 	};
 
 	const startInterval = () => {
+		const start = Date.now();
 		blinkingIntervalRef.current && clearInterval(blinkingIntervalRef.current);
 		setIsDisplay(true);
 		setIsTimerRunnning(true);
@@ -80,6 +81,9 @@ export const TrainingTimer: React.FC = () => {
 					intervalIdRef.current
 				) {
 					clearInterval(intervalIdRef.current);
+					const difference = Math.floor((Date.now() - start) / 1000) - 1;
+					console.log(difference);
+
 					return tempObj;
 				}
 
