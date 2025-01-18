@@ -100,7 +100,7 @@ export const TrainingDetailsForm: React.FC = () => {
 						{el.label}
 					</label>
 					<input
-						type='range'
+						type='number'
 						id={el.id}
 						min={el.min}
 						max={el.max}
