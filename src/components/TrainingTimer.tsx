@@ -13,6 +13,13 @@ const labelObj: Record<Stage, string> = {
 	done: 'Dobra robota, trening skończony :)',
 };
 
+type TimerState = {
+	timerStart: number;
+	index: number;
+	pauseStartTime: number;
+	stageSec: number;
+};
+
 export const TrainingTimer: React.FC = () => {
 	const blipSound = useRef(new Audio(blipSoundFile));
 	const bellSound = useRef(new Audio(bellSoundFile));
@@ -23,36 +30,31 @@ export const TrainingTimer: React.FC = () => {
 	const soundState = useSelector(
 		(state: RootState) => state.soundSwitcherState.isSoundsEnabled
 	);
-	const soundStateRef = useRef(soundState);
+
 	const intervalIdRef = useRef<number | null>(null);
 	const blinkingIntervalRef = useRef<number | null>(null);
-	const [isTimerRunning, setIsTimerRunnning] = useState(true);
 	const [isDisplay, setIsDisplay] = useState(true);
-
+	const [currentTime, setCurrentTime] = useState(Date.now());
+	const pauseDurationRef = useRef(0);
+	const soundStateRef = useRef(soundState);
 	useEffect(() => {
 		soundStateRef.current = soundState;
 	}, [soundState]);
 
-	const [state, setState] = useState({
-		secCounter: 0,
-		stageSecCounter: 0,
+	const [state, setState] = useState<TimerState>({
+		timerStart: currentTime,
 		index: 0,
+		pauseStartTime: 0,
+		stageSec: trainingArr[0].secCounter,
 	});
 
-	const playSound = (stage: Stage, secCounter: number) => {
-		if (secCounter > 0) {
-			blipSound.current.play();
-		} else if (stage === 'exercise') {
-			bellSound.current.play();
-		} else if (stage === 'rest') {
-			whistleSound.current.play();
-		}
-	};
-
 	const formatTime = () => {
+		const elapsedSeconds = Math.floor(
+			(currentTime - state.timerStart - pauseDurationRef.current) / 1000
+		);
 		const trainingTime =
-			trainingArr.reduce((acc, training) => acc + training.length, 0) -
-			state.secCounter;
+			trainingArr[trainingArr.length - 1].secCounter - elapsedSeconds;
+
 		const minutes = Math.floor(trainingTime / 60);
 		const formattedMinutes = minutes.toString().padStart(2, '0');
 
@@ -62,78 +64,121 @@ export const TrainingTimer: React.FC = () => {
 		return `${formattedMinutes}:${formattedSeconds}`;
 	};
 
+	const playSound = (nextStage: Stage, secCounter: number) => {
+		if (!soundStateRef.current) return;
+
+		if (secCounter === 0) {
+			nextStage === 'exercise'
+				? whistleSound.current.play()
+				: bellSound.current.play();
+		} else {
+			blipSound.current.play();
+		}
+	};
+
 	const startBlinking = () => {
 		blinkingIntervalRef.current = setInterval(() => {
 			setIsDisplay((prev) => !prev);
 		}, 1000);
 	};
 
+	const checkIfTrainingIsEnded = (elapsedSeconds: number) => {
+		const lastIndex = trainingArr.length - 1;
+		if (
+			elapsedSeconds >= trainingArr[lastIndex].secCounter &&
+			intervalIdRef.current
+		) {
+			clearInterval(intervalIdRef.current);
+			return;
+		}
+	};
+
+	const calculateStageProgress = (currentTime: number, timerStart: number) => {
+		const elapsedSeconds = Math.floor(
+			(currentTime - timerStart - pauseDurationRef.current) / 1000
+		);
+		let i = 0;
+		for (const [index, el] of trainingArr.entries()) {
+			if (elapsedSeconds <= el.secCounter) {
+				break;
+			}
+			i = index + 1;
+		}
+		checkIfTrainingIsEnded(elapsedSeconds);
+
+		const stageSec = trainingArr[i].secCounter - elapsedSeconds;
+		console.log(stageSec);
+		if (stageSec <= 3) {
+			playSound(trainingArr[i + 1].type, stageSec);
+		}
+
+		setState((prev) => {
+			if (stageSec === 0) {
+				return {
+					...prev,
+					index: i + 1,
+					stageSec: trainingArr[i + 1].secCounter - trainingArr[i].secCounter,
+				};
+			}
+			return { ...prev, index: i, stageSec };
+		});
+	};
+
 	const startInterval = () => {
-		const start = Date.now();
-		blinkingIntervalRef.current && clearInterval(blinkingIntervalRef.current);
-		setIsDisplay(true);
-		setIsTimerRunnning(true);
+		console.log(state);
 		intervalIdRef.current = setInterval(() => {
-			setState((prevState) => {
-				const tempObj = { ...prevState };
-				if (
-					trainingArr[tempObj.index].type === 'done' &&
-					intervalIdRef.current
-				) {
-					clearInterval(intervalIdRef.current);
-					const difference = Math.floor((Date.now() - start) / 1000) - 1;
-					console.log(difference);
-
-					return tempObj;
-				}
-
-				tempObj.secCounter++;
-				tempObj.stageSecCounter++;
-				const numberOfRemainingSeconds =
-					trainingArr[tempObj.index].length - tempObj.stageSecCounter;
-				if (numberOfRemainingSeconds <= 3 && soundStateRef.current) {
-					playSound(trainingArr[tempObj.index].type, numberOfRemainingSeconds);
-				}
-
-				if (tempObj.stageSecCounter === trainingArr[tempObj.index].length) {
-					tempObj.index++;
-					tempObj.stageSecCounter = 0;
-				}
-				return tempObj;
-			});
+			const now = Date.now();
+			setCurrentTime(() => now);
+			calculateStageProgress(now, state.timerStart);
 		}, 1000);
 	};
 
-	const stopInterval = () => {
-		setIsTimerRunnning(false);
+	const stopInterval = (interval: number | null) => {
+		if (!interval) return;
+		clearInterval(interval);
+	};
+
+	const startPause = () => {
+		setState({ ...state, pauseStartTime: Date.now() });
+		stopInterval(intervalIdRef.current);
 		startBlinking();
-		if (intervalIdRef.current !== null) {
-			clearInterval(intervalIdRef.current);
-			intervalIdRef.current = null;
-		}
+	};
+
+	const stopPause = () => {
+		pauseDurationRef.current += Date.now() - state.pauseStartTime;
+
+		setState({
+			...state,
+			pauseStartTime: 0,
+		});
+		setCurrentTime(Date.now());
+		stopInterval(blinkingIntervalRef.current);
+		setIsDisplay(true);
+		startInterval();
 	};
 
 	useEffect(() => {
 		startInterval();
-		return () => stopInterval();
+		return () => stopInterval(intervalIdRef.current);
 	}, []);
 	return (
 		<div className='flex flex-col text-center items-center gap-4 w-3/4 mx-auto my-2 border border-white rounded-lg pb-6 pt-3 bg-blue-950'>
 			<p className={isDisplay ? 'text-white' : 'text-transparent'}>
 				{formatTime()}
 			</p>
-
 			<p>Numer setu: {trainingArr[state.index].setIndex}</p>
 			<p>Numer cyklu: {trainingArr[state.index].cycleIndex}</p>
+			<p>{labelObj[trainingArr[state.index]?.type]}</p>
+			<p>{state.stageSec}</p>
 
-			<p>{trainingArr[state.index].length - state.stageSecCounter}</p>
-			<p>{labelObj[trainingArr[state.index].type]}</p>
-			<button
-				className='btn bg-red-700'
-				onClick={() => (isTimerRunning ? stopInterval() : startInterval())}
-			>
-				{isTimerRunning ? 'Wstrzymaj stoper' : 'Wznów stoper'}
-			</button>
+			{trainingArr[state.index].type !== 'done' && (
+				<button
+					className='btn bg-red-700'
+					onClick={() => (!state.pauseStartTime ? startPause() : stopPause())}
+				>
+					{!state.pauseStartTime ? 'Wstrzymaj stoper' : 'Wznów stoper'}
+				</button>
+			)}
 		</div>
 	);
 };

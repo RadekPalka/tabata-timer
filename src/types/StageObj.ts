@@ -2,7 +2,7 @@ import { Stage } from './Stage';
 
 export type StageObj = {
 	type: Stage;
-	length: number;
+	secCounter: number;
 	cycleIndex: number;
 	setIndex: number;
 };
