@@ -45,7 +45,7 @@ export const TrainingTimer: React.FC = () => {
 		timerStart: currentTime,
 		index: 0,
 		pauseStartTime: 0,
-		stageSec: trainingArr[0].timeStamp,
+		stageSec: trainingArr[0].secCounter,
 	});
 
 	const formatTime = () => {
@@ -53,7 +53,7 @@ export const TrainingTimer: React.FC = () => {
 			(currentTime - state.timerStart - pauseDurationRef.current) / 1000
 		);
 		const trainingTime =
-			trainingArr[trainingArr.length - 1].timeStamp - elapsedSeconds;
+			trainingArr[trainingArr.length - 1].secCounter - elapsedSeconds;
 
 		const minutes = Math.floor(trainingTime / 60);
 		const formattedMinutes = minutes.toString().padStart(2, '0');
@@ -85,7 +85,7 @@ export const TrainingTimer: React.FC = () => {
 	const checkIfTrainingIsEnded = (elapsedSeconds: number) => {
 		const lastIndex = trainingArr.length - 1;
 		if (
-			elapsedSeconds >= trainingArr[lastIndex].timeStamp &&
+			elapsedSeconds >= trainingArr[lastIndex].secCounter &&
 			intervalIdRef.current
 		) {
 			clearInterval(intervalIdRef.current);
@@ -99,14 +99,14 @@ export const TrainingTimer: React.FC = () => {
 		);
 		let i = 0;
 		for (const [index, el] of trainingArr.entries()) {
-			if (elapsedSeconds <= el.timeStamp) {
+			if (elapsedSeconds <= el.secCounter) {
 				break;
 			}
 			i = index + 1;
 		}
 		checkIfTrainingIsEnded(elapsedSeconds);
 
-		const stageSec = trainingArr[i].timeStamp - elapsedSeconds;
+		const stageSec = trainingArr[i].secCounter - elapsedSeconds;
 		console.log(stageSec);
 		if (stageSec <= 3) {
 			playSound(trainingArr[i + 1].type, stageSec);
@@ -117,7 +117,7 @@ export const TrainingTimer: React.FC = () => {
 				return {
 					...prev,
 					index: i + 1,
-					stageSec: trainingArr[i + 1].timeStamp - trainingArr[i].timeStamp,
+					stageSec: trainingArr[i + 1].secCounter - trainingArr[i].secCounter,
 				};
 			}
 			return { ...prev, index: i, stageSec };
