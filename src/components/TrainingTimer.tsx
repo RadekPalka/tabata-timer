@@ -35,7 +35,7 @@ export const TrainingTimer: React.FC = () => {
 	const blinkingIntervalRef = useRef<number | null>(null);
 	const [isDisplay, setIsDisplay] = useState(true);
 	const [currentTime, setCurrentTime] = useState(Date.now());
-	const pauseDurationRef = useRef(0);
+
 	const soundStateRef = useRef(soundState);
 	useEffect(() => {
 		soundStateRef.current = soundState;
@@ -49,9 +49,7 @@ export const TrainingTimer: React.FC = () => {
 	});
 
 	const formatTime = () => {
-		const elapsedSeconds = Math.floor(
-			(currentTime - state.timerStart - pauseDurationRef.current) / 1000
-		);
+		const elapsedSeconds = Math.floor((currentTime - state.timerStart) / 1000);
 		const trainingTime =
 			trainingArr[trainingArr.length - 1].secCounter - elapsedSeconds;
 
@@ -94,9 +92,7 @@ export const TrainingTimer: React.FC = () => {
 	};
 
 	const calculateStageProgress = (currentTime: number, timerStart: number) => {
-		const elapsedSeconds = Math.floor(
-			(currentTime - timerStart - pauseDurationRef.current) / 1000
-		);
+		const elapsedSeconds = Math.floor((currentTime - timerStart) / 1000);
 		let i = 0;
 		for (const [index, el] of trainingArr.entries()) {
 			if (elapsedSeconds <= el.secCounter) {
@@ -125,7 +121,7 @@ export const TrainingTimer: React.FC = () => {
 	};
 
 	const startInterval = () => {
-		console.log(state);
+		console.log(state.timerStart);
 		intervalIdRef.current = setInterval(() => {
 			const now = Date.now();
 			setCurrentTime(() => now);
@@ -145,11 +141,12 @@ export const TrainingTimer: React.FC = () => {
 	};
 
 	const stopPause = () => {
-		pauseDurationRef.current += Date.now() - state.pauseStartTime;
+		const pauseDuration = Date.now() - state.pauseStartTime;
 
 		setState({
 			...state,
 			pauseStartTime: 0,
+			timerStart: state.timerStart + pauseDuration,
 		});
 		setCurrentTime(Date.now());
 		stopInterval(blinkingIntervalRef.current);
@@ -160,7 +157,7 @@ export const TrainingTimer: React.FC = () => {
 	useEffect(() => {
 		startInterval();
 		return () => stopInterval(intervalIdRef.current);
-	}, []);
+	}, [state.timerStart]);
 	return (
 		<div className='flex flex-col text-center items-center gap-4 w-3/4 mx-auto my-2 border border-white rounded-lg pb-6 pt-3 bg-blue-950'>
 			<p className={isDisplay ? 'text-white' : 'text-transparent'}>
