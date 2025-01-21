@@ -99,29 +99,31 @@ export const TrainingDetailsForm: React.FC = () => {
 					<label className='text-slate-300' htmlFor={el.id}>
 						{el.label}
 					</label>
-					<button
-						type='button'
-						onClick={() => el.setValue(el.value - 1)}
-						className='btn bg-green-900'
-					>
-						-
-					</button>
-					<input
-						type='range'
-						id={el.id}
-						min={el.min}
-						max={el.max}
-						value={el.value}
-						onChange={(e) => el.setValue(Number(e.target.value))}
-						disabled={el.id === 'rest-between-sets' && numberOfSets === 1}
-					/>
-					<button
-						type='button'
-						onClick={() => el.setValue(el.value + 1)}
-						className='btn bg-red-900'
-					>
-						+
-					</button>
+					<div>
+						<button
+							type='button'
+							onClick={() => el.setValue(el.value - 1)}
+							className='btn bg-green-900'
+						>
+							-
+						</button>
+						<input
+							type='range'
+							id={el.id}
+							min={el.min}
+							max={el.max}
+							value={el.value}
+							onChange={(e) => el.setValue(Number(e.target.value))}
+							disabled={el.id === 'rest-between-sets' && numberOfSets === 1}
+						/>
+						<button
+							type='button'
+							onClick={() => el.setValue(el.value + 1)}
+							className='btn bg-red-900'
+						>
+							+
+						</button>
+					</div>
 					<output>{el.value}</output>
 				</div>
 			))}
