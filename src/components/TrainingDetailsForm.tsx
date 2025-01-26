@@ -102,7 +102,9 @@ export const TrainingDetailsForm: React.FC = () => {
 					<div>
 						<button
 							type='button'
-							onClick={() => el.setValue(el.value - 1)}
+							onClick={() =>
+								el.setValue((prev) => (prev > el.min ? prev - 1 : prev))
+							}
 							className='btn bg-green-900 mr-2'
 						>
 							-
@@ -118,7 +120,9 @@ export const TrainingDetailsForm: React.FC = () => {
 						/>
 						<button
 							type='button'
-							onClick={() => el.setValue(el.value + 1)}
+							onClick={() =>
+								el.setValue((prev) => (prev < el.max ? prev + 1 : prev))
+							}
 							className='btn bg-red-900 ml-2'
 						>
 							+
