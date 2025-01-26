@@ -103,7 +103,7 @@ export const TrainingDetailsForm: React.FC = () => {
 						<button
 							type='button'
 							onClick={() => el.setValue(el.value - 1)}
-							className='btn bg-green-900'
+							className='btn bg-green-900 mr-2'
 						>
 							-
 						</button>
@@ -119,7 +119,7 @@ export const TrainingDetailsForm: React.FC = () => {
 						<button
 							type='button'
 							onClick={() => el.setValue(el.value + 1)}
-							className='btn bg-red-900'
+							className='btn bg-red-900 ml-2'
 						>
 							+
 						</button>
