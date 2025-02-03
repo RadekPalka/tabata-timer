@@ -151,7 +151,6 @@ export const TrainingTimer: React.FC = () => {
 		setCurrentTime(Date.now());
 		stopInterval(blinkingIntervalRef.current);
 		setIsDisplay(true);
-		startInterval();
 	};
 
 	useEffect(() => {
